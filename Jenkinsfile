@@ -73,10 +73,10 @@ pipeline {
 
   post {
     success {
-      echo "✅ CI Passed → Tag pushed → GitHub Actions triggered"
+      echo " CI Passed → Tag pushed → GitHub Actions triggered"
     }
     failure {
-      echo "❌ CI Failed → No release triggered"
+      echo " CI Failed → No release triggered"
     }
   }
 }
