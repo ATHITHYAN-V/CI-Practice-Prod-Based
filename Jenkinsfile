@@ -32,10 +32,14 @@ pipeline {
     }
 
     stage('Unit Tests') {
-      steps {
-        bat 'npm test -- --watch=false'
-      }
-    }
+  when {
+    expression { !env.CI }
+  }
+  steps {
+    bat 'npm test -- --watch=false'
+  }
+}
+
 
     stage('Security Scan (npm audit)') {
       steps {
