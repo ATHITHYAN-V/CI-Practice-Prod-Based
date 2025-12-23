@@ -21,31 +21,31 @@ pipeline {
 
     stage('Install Dependencies') {
       steps {
-        sh 'npm ci'
+        bat 'npm ci'
       }
     }
 
     stage('Lint') {
       steps {
-        sh 'npm run lint'
+        bat 'npm run lint'
       }
     }
 
     stage('Unit Tests') {
       steps {
-        sh 'npm test -- --watch=false'
+        bat 'npm test -- --watch=false'
       }
     }
 
     stage('Security Scan (npm audit)') {
       steps {
-        sh 'npm audit --audit-level=high'
+        bat 'npm audit --audit-level=high'
       }
     }
 
     stage('Build Validation') {
       steps {
-        sh 'npm run build'
+        bat 'npm run build'
       }
     }
 
@@ -59,12 +59,12 @@ pipeline {
 
           echo "Creating release tag: ${version}"
 
-          sh """
+          bat """
             git config user.name "jenkins-ci"
             git config user.email "jenkins@ci.local"
 
-            git tag ${version}
-            git push https://${GITHUB_TOKEN}@github.com/ATHITHYAN-V/CI-Practice-Prod-Based.git ${version}
+            git tag %version%
+            git push https://${GITHUB_TOKEN}@github.com/ATHITHYAN-V/CI-Practice-Prod-Based.git %version%
           """
         }
       }
