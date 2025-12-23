@@ -13,30 +13,81 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # 1️⃣ Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Node.js setup
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: npm ci
 
+      # 4️⃣ Rebuild native Electron modules
       - name: Rebuild native Electron modules
         run: npx electron-builder install-app-deps
 
+      # 5️⃣ Build Windows EXE
       - name: Build Electron App (EXE)
         run: npm run package
         env:
           CI: false
 
+      # 6️⃣ Create GitHub Release + Upload EXE
       - name: Upload EXE to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
+          generate_release_notes: true
           files: |
-            release/build/**/*.exe
+            release/build/**/*Setup*.exe
+
+      # 7️⃣ Send Email (SUCCESS)
+      - name: Send Success Email
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "✅ Electron EXE Build Successful - ${{ github.ref_name }}"
+          body: |
+            Build Successful 🎉
+
+            Repository: ${{ github.repository }}
+            Version: ${{ github.ref_name }}
+
+            Download EXE:
+            https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}
+
+          to: athithyanv402@gmail.com
+          from: GitHub Actions
+
+      # 8️⃣ Send Email (FAILURE)
+      - name: Send Failure Email
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "❌ Electron EXE Build Failed - ${{ github.ref_name }}"
+          body: |
+            Build FAILED ❌
+
+            Repository: ${{ github.repository }}
+            Version: ${{ github.ref_name }}
+
+            Check logs:
+            https://github.com/${{ github.repository }}/actions
+
+          to: athithyanv402@gmail.com
+          from: GitHub Actions
