@@ -54,25 +54,23 @@ pipeline {
     }
 
     stage('Create Release Tag') {
-      when {
-        branch 'main'
-      }
-      steps {
-        script {
-          def version = "v1.0.${env.BUILD_NUMBER}"
+  steps {
+    script {
+      def version = "v1.0.${env.BUILD_NUMBER}"
 
-          echo "Creating release tag: ${version}"
+      echo "Creating release tag: ${version}"
 
-          bat """
-            git config user.name "jenkins-ci"
-            git config user.email "jenkins@ci.local"
+      bat """
+        git config user.name "jenkins-ci"
+        git config user.email "jenkins@ci.local"
 
-            git tag %version%
-            git push https://${GITHUB_TOKEN}@github.com/ATHITHYAN-V/CI-Practice-Prod-Based.git %version%
-          """
-        }
-      }
+        git tag ${version}
+        git push https://${GITHUB_TOKEN}@github.com/ATHITHYAN-V/CI-Practice-Prod-Based.git ${version}
+      """
     }
+  }
+}
+
   }
 
   post {
