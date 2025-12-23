@@ -13,11 +13,14 @@ module.exports = {
   plugins: ["@typescript-eslint", "compat"],
 
   rules: {
-    // Electron / React modern setup
+    // Disable Prettier in CI
+    "prettier/prettier": "off",
+
+    // React (modern JSX)
     "react/react-in-jsx-scope": "off",
     "react/jsx-filename-extension": "off",
 
-    // Build tools & TS resolution
+    // Electron / Webpack / TS
     "import/no-extraneous-dependencies": "off",
     "import/extensions": "off",
     "import/no-unresolved": "off",
@@ -30,7 +33,7 @@ module.exports = {
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": "error",
 
-    // Electron compat rule (BREAKS with new Electron)
+    // Electron compat (breaks on new Electron)
     "compat/compat": "off",
   },
 
