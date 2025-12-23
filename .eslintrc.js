@@ -1,30 +1,41 @@
 module.exports = {
-  extends: "erb",
-  plugins: ["@typescript-eslint"],
-  rules: {
-    // A temporary hack related to IDE not resolving correct package.json
-    "import/no-extraneous-dependencies": "off",
-    "react/react-in-jsx-scope": "off",
-    "react/jsx-filename-extension": "off",
-    "import/extensions": "off",
-    "import/no-unresolved": "off",
-    "import/no-import-module-exports": "off",
-    "no-shadow": "off",
-    "@typescript-eslint/no-shadow": "error",
-    "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": "error",
-  },
-  plugins: ["compat"],
-  rules: {
-    "compat/compat": "off",
-  },
+  root: true,
+
+  extends: ["erb"],
+
+  parser: "@typescript-eslint/parser",
+
   parserOptions: {
     ecmaVersion: 2022,
     sourceType: "module",
   },
+
+  plugins: ["@typescript-eslint", "compat"],
+
+  rules: {
+    // Electron / React modern setup
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-filename-extension": "off",
+
+    // Build tools & TS resolution
+    "import/no-extraneous-dependencies": "off",
+    "import/extensions": "off",
+    "import/no-unresolved": "off",
+    "import/no-import-module-exports": "off",
+
+    // TypeScript rules
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": "error",
+
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "error",
+
+    // Electron compat rule (BREAKS with new Electron)
+    "compat/compat": "off",
+  },
+
   settings: {
     "import/resolver": {
-      // See https://github.com/benmosher/eslint-plugin-import/issues/1396#issuecomment-575727774 for line below
       node: {
         extensions: [".js", ".jsx", ".ts", ".tsx"],
         moduleDirectory: ["node_modules", "src/"],
@@ -38,4 +49,13 @@ module.exports = {
       "@typescript-eslint/parser": [".ts", ".tsx"],
     },
   },
+
+  overrides: [
+    {
+      files: [".erb/**/*", "webpack*.ts"],
+      rules: {
+        "@typescript-eslint/no-var-requires": "off",
+      },
+    },
+  ],
 };
