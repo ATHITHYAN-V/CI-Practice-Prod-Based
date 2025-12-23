@@ -8,7 +8,7 @@ pipeline {
 
   environment {
     GITHUB_TOKEN = credentials('github-pat')
-    EMAIL_TO = "athithyanv33@gmail.com"
+    EMAIL_TO = "athithyanv402@gmail.com"
   }
 
   stages {
@@ -34,6 +34,7 @@ pipeline {
         }
       }
     }
+
     stage('Install Dependencies') {
       steps {
         bat 'npm ci'
@@ -41,14 +42,14 @@ pipeline {
       post {
         success {
           emailext(
-            subject: "Jenkins | Install Dependencies | SUCCESS",
-            body: "Dependencies installed\n${env.BUILD_URL}",
+            subject: "Jenkins | Dependencies | SUCCESS",
+            body: "npm ci completed\n${env.BUILD_URL}",
             to: env.EMAIL_TO
           )
         }
         failure {
           emailext(
-            subject: "Jenkins | Install Dependencies | FAILED",
+            subject: "Jenkins | Dependencies | FAILED",
             body: "npm ci failed\n${env.BUILD_URL}",
             to: env.EMAIL_TO
           )
@@ -78,7 +79,7 @@ pipeline {
       }
     }
 
-    stage('Security Scan (npm audit)') {
+    stage('Security Scan') {
       steps {
         bat 'npm audit --audit-level=high'
       }
@@ -86,14 +87,14 @@ pipeline {
         success {
           emailext(
             subject: "Jenkins | Security Scan | SUCCESS",
-            body: "No vulnerabilities found\n${env.BUILD_URL}",
+            body: "No high vulnerabilities\n${env.BUILD_URL}",
             to: env.EMAIL_TO
           )
         }
         failure {
           emailext(
             subject: "Jenkins | Security Scan | FAILED",
-            body: "Vulnerabilities detected\n${env.BUILD_URL}",
+            body: "Vulnerabilities found\n${env.BUILD_URL}",
             to: env.EMAIL_TO
           )
         }
@@ -108,7 +109,7 @@ pipeline {
         success {
           emailext(
             subject: "Jenkins | Build | SUCCESS",
-            body: "Build completed successfully\n${env.BUILD_URL}",
+            body: "Build completed\n${env.BUILD_URL}",
             to: env.EMAIL_TO
           )
         }
@@ -123,33 +124,36 @@ pipeline {
     }
 
     stage('Create Release Tag') {
-      when {
-        branch 'main'
-      }
       steps {
         script {
           def version = "v1.0.${env.BUILD_NUMBER}"
 
+          echo "Creating Git tag: ${version}"
+
           bat """
             git config user.name "jenkins-ci"
             git config user.email "jenkins@ci.local"
-            git tag ${version}
-            git push https://${GITHUB_TOKEN}@github.com/ATHITHYAN-V/CI-Practice-Prod-Based.git ${version}
+
+            git fetch --tags
+
+            git tag ${version} || echo "Tag ${version} already exists"
+
+            git push https://${GITHUB_TOKEN}@github.com/ATHITHYAN-V/CI-Practice-Prod-Based.git ${version} || echo "Tag already pushed"
           """
         }
       }
       post {
         success {
           emailext(
-            subject: "Jenkins | Release Tag Created",
-            body: "Tag created successfully\nTag: v1.0.${env.BUILD_NUMBER}\n${env.BUILD_URL}",
+            subject: "Jenkins | Tag Created | ${env.BUILD_NUMBER}",
+            body: "Git tag created or already exists\nTag: v1.0.${env.BUILD_NUMBER}\n${env.BUILD_URL}",
             to: env.EMAIL_TO
           )
         }
         failure {
           emailext(
             subject: "Jenkins | Tag Creation FAILED",
-            body: "Failed to create git tag\n${env.BUILD_URL}",
+            body: "Failed to create Git tag\n${env.BUILD_URL}",
             to: env.EMAIL_TO
           )
         }
@@ -166,6 +170,7 @@ Pipeline completed successfully
 
 Job: ${env.JOB_NAME}
 Build: #${env.BUILD_NUMBER}
+Tag: v1.0.${env.BUILD_NUMBER}
 URL: ${env.BUILD_URL}
 """,
         to: env.EMAIL_TO
