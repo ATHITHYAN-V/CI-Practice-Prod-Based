@@ -1,0 +1,50 @@
+name: Build & Release Electron App (Windows)
+
+on:
+  push:
+    tags:
+      - "v*" # Trigger ONLY when Jenkins creates a version tag
+
+permissions:
+  contents: write # Required to create GitHub Releases
+
+jobs:
+  build:
+    name: Build Windows EXE
+    runs-on: windows-latest
+
+    steps:
+      # 1️⃣ Checkout code at the tagged version
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup Node.js (match your local version)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # 3️⃣ Install dependencies (reproducible)
+      - name: Install dependencies
+        run: npm ci
+
+      # 4️⃣ Rebuild native Electron modules (VERY IMPORTANT)
+      - name: Rebuild native modules
+        run: npx electron-builder install-app-deps
+
+      # 5️⃣ Build Electron Windows EXE
+      - name: Build Electron App
+        run: npm run dist
+        env:
+          CI: false
+
+      # 6️⃣ Create GitHub Release & upload EXE
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            dist/*.exe
